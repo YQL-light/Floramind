@@ -1,0 +1,17 @@
+# Web Framework & Server
+fastapi
+uvicorn
+
+# Database (ORM & Async Driver)
+tortoise-orm
+asyncpg
+
+# Configuration & Security
+pydantic-settings
+python-jose[cryptography]
+bcrypt
+
+# Validation & Utilities
+pydantic[email] # 包含 email-validator
+python-multipart
+aiohttp
