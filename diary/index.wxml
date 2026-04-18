@@ -1,0 +1,225 @@
+<!-- pages/diary/index.wxml -->
+<view class="container">
+  
+
+  <!-- 天气组件 -->
+  <view class="weather-card">
+    <view class="weather-left">
+      <text class="weather-text">{{weather.condition}}</text>
+      <text class="weather-temp">{{weather.tempLow}}°C-{{weather.tempHigh}}°C</text>
+    </view>
+    <view class="weather-icon">
+      <view class="sun">
+        <view class="sun-face"></view>
+        <view class="sun-ray" wx:for="{{8}}" wx:key="index" style="transform: rotate({{index * 45}}deg)"></view>
+      </view>
+      <view class="cloud"></view>
+    </view>
+  </view>
+
+  <!-- 植物卡片轮播 -->
+  <view class="plant-carousel-wrapper">
+    <view class="carousel-dots">
+      <view 
+        wx:for="{{plants}}" 
+        wx:key="id" 
+        class="dot {{currentPlantIndex === index ? 'active' : ''}}"
+      ></view>
+    </view>
+    
+    <swiper 
+      class="plant-swiper" 
+      current="{{currentPlantIndex}}" 
+      bindchange="onPlantSwiperChange"
+      circular="{{true}}"
+      duration="{{300}}"
+    >
+      <swiper-item wx:for="{{plants}}" wx:key="id">
+        <view class="plant-card">
+          <image class="plant-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+          <view class="plant-info">
+            <text class="plant-name">{{item.name}}</text>
+            <text class="plant-detail">添加时间：{{item.addedDate}}</text>
+            <text class="plant-detail">距离下次浇水还有：<text class="highlight">{{item.daysUntilWater}}天</text></text>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+  </view>
+
+  <!-- 时间轴日记列表 -->
+  <scroll-view class="timeline-container" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}">
+    <view class="timeline">
+      <view 
+        wx:for="{{currentPlant.diaryEntries}}" 
+        wx:key="id" 
+        class="timeline-item"
+      >
+        <!-- 滑动删除容器 -->
+        <view 
+          class="swipe-container"
+          data-id="{{item.id}}"
+          bindtouchstart="onTouchStart"
+          bindtouchmove="onTouchMove"
+          bindtouchend="onTouchEnd"
+        >
+          <view class="entry-content" style="transform: translateX({{item.swipeX || 0}}px)">
+            <!-- 时间轴线 -->
+            <view class="timeline-line">
+              <view class="timeline-dot"></view>
+              <view class="timeline-connector" wx:if="{{index < currentPlant.diaryEntries.length - 1}}"></view>
+            </view>
+            
+            <!-- 日记内容 -->
+            <view class="entry-main">
+              <view class="entry-header">
+                <text class="entry-date">{{item.date}}</text>
+                <view class="entry-tags">
+                  <view 
+                    wx:for="{{item.actions}}" 
+                    wx:for-item="action"
+                    wx:key="*this" 
+                    class="tag tag-{{action}}"
+                  >
+                    {{action === 'water' ? '浇水' : action === 'fertilize' ? '施肥' : '剪枝'}}
+                  </view>
+                </view>
+              </view>
+              <text class="entry-note">{{item.note}}</text>
+              <view class="entry-images" wx:if="{{item.images.length > 0}}">
+                <image 
+                  wx:for="{{item.images}}" 
+                  wx:for-item="img"
+                  wx:key="*this" 
+                  src="{{img}}" 
+                  class="entry-image"
+                  mode="aspectFill"
+                  bindtap="previewImage"
+                  data-src="{{img}}"
+                  data-urls="{{item.images}}"
+                ></image>
+              </view>
+            </view>
+          </view>
+          
+          <!-- 删除按钮 -->
+          <view 
+            class="delete-btn" 
+            catchtap="deleteEntry" 
+            data-id="{{item.id}}"
+          >
+            <text class="delete-text">删除</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 添加按钮 -->
+  <view class="fab-button" bindtap="openAddModal">
+    <text class="fab-icon">+</text>
+  </view>
+
+</view>  
+
+<!-- 添加日记弹窗 (全屏) -->
+<view class="add-modal {{showAddModal ? 'show' : ''}}">
+  <view class="modal-header">
+    <view class="back-btn" bindtap="closeAddModal">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="modal-title">添加日记</text>
+    <text class="modal-title-en">Diary</text>
+  </view>
+  
+  <view class="modal-body">
+    <!-- 文本输入区域 -->
+    <view class="text-input-area">
+      <textarea 
+        class="diary-textarea"
+        placeholder="点击输入文本~\n可以在这里记录植物发生的变化哦~"
+        placeholder-class="textarea-placeholder"
+        value="{{newEntry.note}}"
+        bindinput="onNoteInput"
+        maxlength="500"
+        auto-height="{{true}}"
+      ></textarea>
+    </view>
+    <!-- 选择植物 -->
+<view class="plant-select-section">
+  <text class="section-title">选择植物</text>
+  <picker
+    mode="selector"
+    range="{{plants}}"
+    range-key="name"
+    value="{{selectedPlantIndex}}"
+    bindchange="onPlantSelect"
+  >
+    <view class="plant-picker">
+      <text class="picker-text">{{plants[selectedPlantIndex].name || '请选择植物'}}</text>
+      <text class="picker-arrow">▼</text>
+    </view>
+  </picker>
+</view>
+    <!-- 养护操作选择 -->
+    <view class="action-section">
+      <text class="section-title">今日养护</text>
+      <view class="action-buttons">
+        <view 
+          class="action-btn {{newEntry.actions.indexOf('water') > -1 ? 'selected' : ''}}"
+          bindtap="toggleAction"
+          data-action="water"
+        >
+          <text>浇水</text>
+        </view>
+        <view 
+          class="action-btn {{newEntry.actions.indexOf('fertilize') > -1 ? 'selected' : ''}}"
+          bindtap="toggleAction"
+          data-action="fertilize"
+        >
+          <text>施肥</text>
+        </view>
+        <view 
+          class="action-btn {{newEntry.actions.indexOf('prune') > -1 ? 'selected' : ''}}"
+          bindtap="toggleAction"
+          data-action="prune"
+        >
+          <text>剪枝</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 图片上传区域 -->
+    <view class="image-upload-section">
+      <view class="upload-grid">
+        <!-- 已上传图片预览 -->
+        <view 
+          wx:for="{{newEntry.images}}" 
+          wx:key="*this" 
+          class="uploaded-image-wrapper"
+        >
+          <image src="{{item}}" class="uploaded-image" mode="aspectFill"></image>
+          <view class="remove-image" catchtap="removeImage" data-index="{{index}}">×</view>
+        </view>
+        
+        <!-- 添加图片按钮 -->
+        <view class="upload-btn" bindtap="chooseImage" wx:if="{{newEntry.images.length < 9}}">
+          <text class="upload-icon">+</text>
+          <text class="upload-text">点击添加植物照片</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 装饰植物图案 -->
+    <view class="decoration-plants">
+      <view class="deco-plant plant-1"></view>
+      <view class="deco-plant plant-2"></view>
+      <view class="deco-plant plant-3"></view>
+    </view>
+  </view>
+  
+  <!-- 完成按钮 -->
+  <view class="modal-footer">
+    <button class="submit-btn" bindtap="submitEntry">完成</button>
+  </view>
+</view>

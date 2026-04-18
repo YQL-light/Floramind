@@ -1,0 +1,8 @@
+{
+  "usingComponents": {},
+  "navigationBarTitleText": "植物日记",
+  "navigationBarBackgroundColor": "#f0f7e6",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#f0f7e6",
+  "enablePullDownRefresh": true
+}

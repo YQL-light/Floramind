@@ -1,0 +1,37 @@
+<view class="page">
+  <view class="top">
+    <text class="icon" bindtap="onBackToGarden">←</text>
+    <view class="search">🔍</view>
+  </view>
+
+  <view class="title-wrap">
+    <text class="title-cn">我的植物</text>
+    <text class="title-en">Plant</text>
+  </view>
+
+  <view class="my-grid">
+    <view class="add-card" bindtap="onAddPlant">
+      <text class="plus">＋</text>
+      <text class="add-text">添加植物</text>
+    </view>
+
+    <block wx:for="{{myPlants}}" wx:key="id">
+      <view class="plant-card">
+        <image class="plant-img" src="{{item.image}}" mode="aspectFill"></image>
+        <view class="plant-name">{{item.name}}</view>
+        <view class="plant-sub">距离下次浇水还有：{{item.days}}天</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="section-title">热门植物</view>
+
+  <view class="hot-grid">
+    <block wx:for="{{hotPlants}}" wx:key="id">
+      <view class="hot-card">
+        <image class="hot-img" src="{{item.image}}" mode="aspectFill"></image>
+        <view class="hot-name">{{item.name}}</view>
+      </view>
+    </block>
+  </view>
+</view>
